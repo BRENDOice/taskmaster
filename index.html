@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskMaster - Lista de Tarefas</title>
+  <meta name="description" content="Aplicação moderna de gerenciamento de tarefas em modo escuro com persistência local.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-start p-4 sm:p-6 md:p-10 relative overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+  <!-- Glow Background Accents -->
+  <div class="glow-effect top-[-100px] left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-indigo-600/15 rounded-full"></div>
+  <div class="glow-effect top-[40%] right-[-100px] w-[350px] h-[350px] bg-purple-600/10 rounded-full"></div>
+  <div class="glow-effect bottom-[-100px] left-[-100px] w-[350px] h-[350px] bg-blue-600/10 rounded-full"></div>
+
+  <!-- Container Principal -->
+  <div class="w-full max-w-2xl relative z-10 flex flex-col gap-6">
+
+    <!-- Header -->
+    <header class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-1 ring-white/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+              TaskMaster
+            </h1>
+            <p id="current-date" class="text-xs sm:text-sm text-slate-400 font-medium capitalize mt-0.5">
+              Carregando data...
+            </p>
+          </div>
+        </div>
+
+        <!-- Badges de Resumo Rápido -->
+        <div class="flex items-center gap-2 self-start sm:self-auto bg-slate-950/60 border border-slate-800/80 rounded-2xl p-1.5">
+          <div class="px-3 py-1 text-center">
+            <span class="block text-xs text-slate-400 font-medium">Pendentes</span>
+            <span id="header-pending-count" class="text-base font-bold text-amber-400">0</span>
+          </div>
+          <div class="w-px h-7 bg-slate-800"></div>
+          <div class="px-3 py-1 text-center">
+            <span class="block text-xs text-slate-400 font-medium">Concluídas</span>
+            <span id="header-completed-count" class="text-base font-bold text-emerald-400">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Progresso Geral -->
+      <div class="mt-6 pt-5 border-t border-slate-800/80">
+        <div class="flex justify-between items-center text-xs sm:text-sm font-medium mb-2">
+          <span class="text-slate-300">Progresso das tarefas</span>
+          <span id="progress-percentage" class="text-indigo-400 font-semibold">0%</span>
+        </div>
+        <div class="w-full h-2.5 bg-slate-800/90 rounded-full overflow-hidden p-0.5 ring-1 ring-slate-700/40">
+          <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Formulário de Adicionar Tarefa -->
+    <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl">
+      <form id="task-form" class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            id="task-input" 
+            placeholder="Qual é a sua próxima tarefa?" 
+            maxlength="150"
+            autocomplete="off"
+            class="w-full pl-11 pr-4 py-3.5 bg-slate-950/70 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-sm sm:text-base focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200"
+          >
+        </div>
+        <button 
+          type="submit" 
+          id="btn-add-task"
+          class="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:scale-[0.98] text-white font-semibold text-sm sm:text-base rounded-2xl shadow-lg shadow-indigo-600/25 transition-all duration-200 cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Adicionar</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Lista de Tarefas & Controles -->
+    <main class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl flex flex-col gap-5">
+      
+      <!-- Barra de Filtros e Ações -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+        <!-- Filtros de Status -->
+        <div class="flex items-center gap-1.5 p-1 bg-slate-950/70 border border-slate-800/80 rounded-2xl self-start sm:self-auto">
+          <button 
+            type="button" 
+            data-filter="all" 
+            class="filter-btn px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-200 bg-indigo-600 text-white shadow-sm"
+          >
+            Todas <span id="count-all" class="ml-1 opacity-80">(0)</span>
+          </button>
+          <button 
+            type="button" 
+            data-filter="pending" 
+            class="filter-btn px-3.5 py-1.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-200 rounded-xl transition-all duration-200 hover:bg-slate-800/50"
+          >
+            Pendentes <span id="count-pending" class="ml-1 opacity-80">(0)</span>
+          </button>
+          <button 
+            type="button" 
+            data-filter="completed" 
+            class="filter-btn px-3.5 py-1.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-200 rounded-xl transition-all duration-200 hover:bg-slate-800/50"
+          >
+            Concluídas <span id="count-completed" class="ml-1 opacity-80">(0)</span>
+          </button>
+        </div>
+
+        <!-- Botão Limpar Concluídas -->
+        <button 
+          type="button" 
+          id="btn-clear-completed" 
+          class="hidden text-xs sm:text-sm text-slate-400 hover:text-rose-400 font-medium transition-colors duration-200 self-end sm:self-auto flex items-center gap-1.5"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Limpar concluídas
+        </button>
+      </div>
+
+      <!-- Container da Lista -->
+      <ul id="task-list" class="flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-1" aria-label="Lista de Tarefas">
+        <!-- Renderizado dinamicamente pelo JavaScript -->
+      </ul>
+
+      <!-- Estado Vazio (quando não houver tarefas) -->
+      <div id="empty-state" class="hidden flex-col items-center justify-center py-12 px-4 text-center">
+        <div class="w-16 h-16 mb-4 rounded-3xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center text-slate-500">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        </div>
+        <h3 id="empty-state-title" class="text-base sm:text-lg font-semibold text-slate-300">
+          Nenhuma tarefa por aqui!
+        </h3>
+        <p id="empty-state-subtitle" class="text-xs sm:text-sm text-slate-500 max-w-sm mt-1">
+          Aproveite para descansar ou comece adicionando suas metas para hoje no campo acima.
+        </p>
+      </div>
+
+      <!-- Rodapé da Lista -->
+      <footer class="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+        <span id="footer-summary">0 tarefas no total</span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+          Salvo automaticamente no navegador
+        </span>
+      </footer>
+    </main>
+
+  </div>
+
+  <!-- Toast de Notificação -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Script da Aplicação -->
+  <script src="app.js"></script>
+</body>
+</html>
